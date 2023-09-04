@@ -7,6 +7,22 @@ const bodyParser = require('body-parser');
 app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.errorHandler());
 
+Sentry.init({
+    dsn: 'https://00d65e8fb801858b9774528500b2cc6d@o4505761874378752.ingest.sentry.io/4505823187894272',
+    integrations: [
+        // enable HTTP calls tracing
+        new Sentry.Integrations.Http({
+            tracing: true,
+        }),
+        // enable Express.js middleware tracing
+        new Sentry.Integrations.Express({
+            app,
+        }),
+    ],
+    // Performance Monitoring
+    tracesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!,
+});
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
