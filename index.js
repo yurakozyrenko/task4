@@ -8,7 +8,7 @@ app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.errorHandler());
 
 Sentry.init({
-    dsn: process.env.DNS,
+    dsn: process.env.DSN,
     integrations: [
         // enable HTTP calls tracing
         new Sentry.Integrations.Http({
