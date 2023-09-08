@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const UsersService = require('../services/users.service');
 const UsersControllers = require('../controllers/users.controller');
+const { body, validationResult } = require('express-validator');
 
 /**
  * @swagger
@@ -11,21 +12,21 @@ const UsersControllers = require('../controllers/users.controller');
  *      tags: [Login]
  *      requestBody:
  *          required: true
- *          description: Check login and password
+ *          description: Check email and password
  *          content:
  *              application/json:
  *                  schema:
  *                    type: object
  *                    required:
- *                      - login
+ *                      - email
  *                      - password
  *                    properties:
- *                      login:
+ *                      email:
  *                        type: string
- *                        example: Cat34
+ *                        example: example@example.com
  *                      password:
  *                        type: string
- *                        example: CatCat                  
+ *                        example: CatCat
  *      responses:
  *          200:
  *              description: The user was successfully register
@@ -39,10 +40,17 @@ const UsersControllers = require('../controllers/users.controller');
  *              description: Some server err
  */
 
-router.post('/login', async (req, res) => {
+router.post('/login',
+body('email').isEmail().withMessage('Укажите корректный email (example@example.com)'),
+body('password').isLength({ min: 6 }).withMessage('Пароль должен быть длиной не менее 6 символов'),
+async (req, res) => {
     try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
         const token = await UsersControllers.loginUser(req.body);
-        res.send({token});
+        res.send({ token });
     } catch (error) {
         return res.status(401).send(error.message);
     }
@@ -72,13 +80,22 @@ router.post('/login', async (req, res) => {
  *              description: Some server err
  */
 
-router.post('/register', async (req, res) => {
-    try {
-        await UsersControllers.createUser(req.body);
-        res.send('Пользователь зарегистрирован');
-    } catch (error) {
-        return res.status(500).send(error.message);
+router.post(
+    '/register',
+    body('email').isEmail().withMessage('Укажите корректный email (example@example.com)'),
+    body('password').isLength({ min: 6 }).withMessage('Пароль должен быть длиной не менее 6 символов'),
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+            await UsersControllers.createUser(req.body);
+            res.send('Пользователь зарегистрирован');
+        } catch (error) {
+            return res.status(500).send(error.message);
+        }
     }
-});
+);
 
 module.exports = router;
