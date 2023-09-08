@@ -2,55 +2,69 @@ const ToDosServices = require('../services/todos.service');
 const { v4: uuidv4 } = require('uuid');
 
 class ToDosControllers {
-    async getToDos() {
+    async getToDos(user) {
         const toDos = await ToDosServices.getToDos();
-        return toDos;
+        const toDo = toDos.filter((item) => item.idUser === user.id);
+        return toDo;
     }
 
     async createToDo(toDo, user) {
         const toDos = await ToDosServices.getToDos();
-        const foundUser = toDos.find((item) => item.id === user.id);
-        toDo.isCompleted = false;
         toDo.id = uuidv4();
-        foundUser.task.push(toDo);
+        toDo.isCompleted = false;
+        toDo.idUser = user.id;
+        toDos.push(toDo);
         await ToDosServices.createToDo(toDos);
         return toDo;
     }
 
     async patchToDo(newTitle, id, user) {
         const toDos = await ToDosServices.getToDos();
-        const foundUser = toDos.find((item) => item.id === user.id);
-        if (!foundUser.task.find((item) => item.id == id)) {
+        const toDo = toDos.filter((item) => item.idUser === user.id);
+        if (toDo.length === 0) {
+            throw new Error('no task for user');
+        }
+        const foundToDo = toDo.filter((item) => item.id === id);
+        if (foundToDo.length === 0) {
             throw new Error('no find title task');
         }
-        const updatedToDo = foundUser.task.map((item) =>
-            item.id === id ? Object.assign(item, newTitle) : item
-        );
-        foundUser.task.splice(0, foundUser.task.length, ...updatedToDo);
+        foundToDo[0].title = newTitle.title;
         await ToDosServices.createToDo(toDos);
-        return foundUser.task.find((item) => item.id === id);
+        return foundToDo;
     }
     async deleteToDo(id, user) {
         const toDos = await ToDosServices.getToDos();
-        const foundUser = toDos.find((item) => item.id === user.id);
-        if (!foundUser.task.find((item) => item.id == id)) {
-            throw new Error('no find task');
+        
+        const toDo = toDos.filter((item) => item.idUser === user.id);
+        if (toDo.length === 0) {
+            throw new Error('no task for user');
         }
-        foundUser.task = foundUser.task.filter((item) => item.id !== id);
-        await ToDosServices.createToDo(toDos);
+        
+        const foundToDo = toDo.filter((item) => item.id === id);
+        if (foundToDo.length === 0) {
+            throw new Error('false');
+        }
+        
+        const newToDos = toDos.filter((item) => item.id !== id);
+        await ToDosServices.createToDo(newToDos);
         return true;
     }
 
     async patchToDoStatus(id, user) {
         const toDos = await ToDosServices.getToDos();
-        const foundUser = toDos.find((item) => item.id === user.id);
-        const updatedToDo = foundUser.task.find((item) => item.id === id);
-        if (!updatedToDo) {
+        const toDo = toDos.filter((item) => item.idUser === user.id);
+        if (toDo.length === 0) {
+            throw new Error('no task for user');
+        }
+
+        const foundToDo = toDo.filter((item) => item.id === id);
+        if (foundToDo.length === 0) {
             throw new Error('no find title task');
         }
-        updatedToDo.isCompleted = !updatedToDo.isCompleted;
+
+        foundToDo[0].isCompleted = !foundToDo[0].isCompleted;
         await ToDosServices.createToDo(toDos);
-        return foundUser.task.find((item) => item.id === id);
+        return foundToDo;
     }
 }
 module.exports = new ToDosControllers();
