@@ -3,13 +3,13 @@ const { v4: uuidv4 } = require('uuid');
 
 class ToDosControllers {
     async getToDos() {
-        let toDos = await ToDosServices.getToDos();
+        const toDos = await ToDosServices.getToDos();
         return toDos;
     }
 
     async createToDo(toDo, user) {
-        let toDos = await ToDosServices.getToDos();
-        let foundUser = toDos.find((item) => item.id === user.id);
+        const toDos = await ToDosServices.getToDos();
+        const foundUser = toDos.find((item) => item.id === user.id);
         toDo.isCompleted = false;
         toDo.id = uuidv4();
         foundUser.task.push(toDo);
