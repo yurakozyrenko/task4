@@ -3,7 +3,7 @@ const router = express.Router();
 const ToDosControllers = require('../controllers/todos.controller');
 const ToDosService = require('../services/todos.service');
 const verifyJWT = require('../middleware/verifyJWT');
-const { body, validationResult } = require('express-validator');
+const { param, body, validationResult } = require('express-validator');
 
 /**
  * @swagger
@@ -11,7 +11,7 @@ const { body, validationResult } = require('express-validator');
  *  get:
  *      security:
  *      - bearerAuth: []
- *      summary: Get users by age
+ *      summary: Get all todos
  *      tags: [Todos]
  *      description: Returns tasks array
  *      responses:
@@ -221,7 +221,14 @@ router.post(
 router.patch(
     '/:id',
     verifyJWT,
-    body('title').notEmpty().withMessage('Title должно быть строкой'),
+    param('id')
+        .isLength({ min: 36, max: 36 })
+        .withMessage(
+            'Укажите корректный id (XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX)'
+        ),
+    body('title')
+        .exists({ checkFalsy: true })
+        .withMessage('Title должно быть строкой'),
     async (req, res) => {
         try {
             const errors = validationResult(req);
@@ -290,14 +297,30 @@ router.patch(
  *              description: Some server err
  */
 
-router.delete('/:id', verifyJWT, async (req, res) => {
-    try {
-        const toDo = await ToDosControllers.deleteToDo(req.params.id, req.user);
-        res.send(toDo);
-    } catch (error) {
-        return res.status(500).send(error.message);
+router.delete(
+    '/:id',
+    verifyJWT,
+    param('id')
+        .isLength({ min: 36, max: 36 })
+        .withMessage(
+            'Укажите корректный id (XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX)'
+        ),
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+            const toDo = await ToDosControllers.deleteToDo(
+                req.params.id,
+                req.user
+            );
+            res.send(toDo);
+        } catch (error) {
+            return res.status(500).send(error.message);
+        }
     }
-});
+);
 
 /**
  * @swagger
@@ -349,16 +372,29 @@ router.delete('/:id', verifyJWT, async (req, res) => {
  *              description: Some server err
  */
 
-router.patch('/:id/isCompleted', verifyJWT, async (req, res) => {
-    try {
-        const toDo = await ToDosControllers.patchToDoStatus(
-            req.params.id,
-            req.user
-        );
-        res.send(toDo);
-    } catch (error) {
-        return res.status(500).send(error.message);
+router.patch(
+    '/:id/isCompleted',
+    verifyJWT,
+    param('id')
+        .isLength({ min: 36, max: 36 })
+        .withMessage(
+            'Укажите корректный id (XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX)'
+        ),
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+            const toDo = await ToDosControllers.patchToDoStatus(
+                req.params.id,
+                req.user
+            );
+            res.send(toDo);
+        } catch (error) {
+            return res.status(500).send(error.message);
+        }
     }
-});
+);
 
 module.exports = router;
