@@ -3,6 +3,7 @@ const router = express.Router();
 const ToDosControllers = require('../controllers/todos.controller');
 const ToDosService = require('../services/todos.service');
 const verifyJWT = require('../middleware/verifyJWT');
+const { body, validationResult } = require('express-validator');
 
 /**
  * @swagger
@@ -42,9 +43,8 @@ const verifyJWT = require('../middleware/verifyJWT');
 
 router.get('/', verifyJWT, async (req, res) => {
     try {
-        const toDos = await ToDosControllers.getToDos();
-        let toDo = toDos.find((item) => item.id === req.user.id);
-        res.send(toDo.task);
+        const toDos = await ToDosControllers.getToDos(req.user);
+        res.send(toDos);
     } catch (error) {
         return res.status(500).send(error.message);
     }
@@ -122,14 +122,23 @@ router.get('/', verifyJWT, async (req, res) => {
  *              description: Some server err
  */
 
-router.post('/', verifyJWT, async (req, res) => {
-    try {
-        const toDo = await ToDosControllers.createToDo(req.body, req.user);
-        res.send(toDo);
-    } catch (error) {
-        return res.status(500).send(error.message);
+router.post(
+    '/',
+    verifyJWT,
+    body('title').notEmpty().withMessage('Title должно быть строкой'),
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+            const toDo = await ToDosControllers.createToDo(req.body, req.user);
+            res.send(toDo);
+        } catch (error) {
+            return res.status(500).send(error.message);
+        }
     }
-});
+);
 
 /**
  * @swagger
@@ -209,18 +218,27 @@ router.post('/', verifyJWT, async (req, res) => {
  *              description: Some server err
  */
 
-router.patch('/:id', verifyJWT, async (req, res) => {
-    try {
-        const toDo = await ToDosControllers.patchToDo(
-            req.body,
-            req.params.id,
-            req.user
-        );
-        res.send(toDo);
-    } catch (error) {
-        return res.status(500).send(error.message);
+router.patch(
+    '/:id',
+    verifyJWT,
+    body('title').notEmpty().withMessage('Title должно быть строкой'),
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+            const toDo = await ToDosControllers.patchToDo(
+                req.body,
+                req.params.id,
+                req.user
+            );
+            res.send(toDo);
+        } catch (error) {
+            return res.status(500).send(error.message);
+        }
     }
-});
+);
 
 /**
  * @swagger
