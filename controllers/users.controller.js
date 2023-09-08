@@ -8,7 +8,7 @@ const saltRounds = 10;
 
 class UserControllers {
     async createUser(data) {
-        const { login, password } = data;
+        const { email, password } = data;
         const users = await UserServices.getUsers();
         if (users.find((item) => item.email === email)) {
             throw new Error('Логин уже используется');
