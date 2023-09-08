@@ -3,7 +3,7 @@ const fs = require('fs');
 class ToDosServices {
     getToDos() {
         return new Promise((res, rej) => {
-            fs.readFile('data.json', 'utf8', (err, data) => {
+            fs.readFile('todo.json', 'utf8', (err, data) => {
                 if (err) {
                     throw new Error('Do not read');
                 }
@@ -14,39 +14,19 @@ class ToDosServices {
 
     createToDo(data) {
         return new Promise((res, rej) => {
-            fs.writeFile('data.json', JSON.stringify(data,null,4), (err, response) => {
-                if (err) {
-                    throw new Error('Do not create');
+            fs.writeFile(
+                'todo.json',
+                JSON.stringify(data, null, 4),
+                (err, response) => {
+                    if (err) {
+                        throw new Error('Error');
+                    }
+
+                    return res({
+                        message: 'Completed.',
+                    });
                 }
-
-                return res({
-                    message: 'toDo created.',
-                });
-            });
-        });
-    }
-
-    updateToDo(data) {
-        return new Promise((res, rej) => {
-            fs.writeFile('data.json', JSON.stringify(data), (err, response) => {
-                if (err) return res(false);
-
-                return res({
-                    message: 'Todo updated.',
-                });
-            });
-        });
-    }
-
-    deleteToDo(data) {
-        return new Promise((res, rej) => {
-            fs.writeFile('data.json', JSON.stringify(data), (err, response) => {
-                if (err) return res(false);
-
-                return res({
-                    message: 'ToDo deleted.',
-                });
-            });
+            );
         });
     }
 }
