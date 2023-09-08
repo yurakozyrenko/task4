@@ -15,7 +15,7 @@ class UserControllers {
         }
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         const user = {
-            login,
+            email,
             password: hashedPassword,
         };
         user.id = uuidv4();
@@ -26,7 +26,7 @@ class UserControllers {
     }
 
     async loginUser(data) {
-        const { login, password } = data;
+        const { email, password } = data;
         const users = await UserServices.getUsers();
         let findUser = users.find((item) => item.email === email);
         if (!findUser) {
