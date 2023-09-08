@@ -10,17 +10,17 @@ const toDosRoutes = require('./todos.routes');
  *      User:
  *        type: object
  *        required:
- *          - login
+ *          - email
  *          - password
  *        properties:
- *          login:
+ *          email:
  *            type: string
- *            description: login
+ *            description: email
  *          password:
  *            type: string
  *            description: password
  *        example:
- *            login: Cat34
+ *            email: example@example.com
  *            password: CatCat
  */
 
