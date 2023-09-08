@@ -8,14 +8,13 @@ const saltRounds = 10;
 
 class UserControllers {
     async createUser(data) {
-        const { name, login, password } = data;
+        const { login, password } = data;
         const users = await UserServices.getUsers();
-        if (users.find((item) => item.login === login)) {
+        if (users.find((item) => item.email === email)) {
             throw new Error('Логин уже используется');
         }
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         const user = {
-            name,
             login,
             password: hashedPassword,
         };
@@ -29,7 +28,7 @@ class UserControllers {
     async loginUser(data) {
         const { login, password } = data;
         const users = await UserServices.getUsers();
-        let findUser = users.find((item) => item.login === login);
+        let findUser = users.find((item) => item.email === email);
         if (!findUser) {
             throw new Error('Пользователь не зарегистрирован');
         }
