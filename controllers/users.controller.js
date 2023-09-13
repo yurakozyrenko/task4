@@ -26,7 +26,7 @@ class UserControllers {
             password: hashedPassword,
         };
         users.push(user);
-        await db.collection('Users').insertOne(user, {upsert: true, new: true});
+        await db.collection('Users').insertOne(user, { upsert: true, new: true, includeResultMetadata: true });
         connection.close();
         return user;
     }
