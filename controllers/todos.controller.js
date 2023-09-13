@@ -1,5 +1,7 @@
 const MongoClient = require('mongodb').MongoClient;
-const mongoClient = new MongoClient('mongodb+srv://yurikozyrenko:N1357=Dt@cluster0.6xqtrex.mongodb.net/ToDo?retryWrites=true&w=majority');
+const mongoClient = new MongoClient(
+    'mongodb+srv://yurikozyrenko:N1357=Dt@cluster0.6xqtrex.mongodb.net/ToDo?retryWrites=true&w=majority'
+);
 const ObjectId = require('mongodb').ObjectId;
 
 const startDb = require('../utils/db');
@@ -26,7 +28,13 @@ class ToDosControllers {
         toDo.idUser = user.id;
         toDos.push(toDo);
 
-        await db.collection('ToDos').insertOne(toDo, { upsert: true, new: true, includeResultMetadata: true });
+        await db
+            .collection('ToDos')
+            .insertOne(toDo, {
+                upsert: true,
+                new: true,
+                includeResultMetadata: true,
+            });
 
         connection.close();
         return toDo;
@@ -55,7 +63,8 @@ class ToDosControllers {
             .collection('ToDos')
             .updateOne(
                 { _id: new ObjectId(id) },
-                { $set: { title: newTitle.title }, { upsert: true, new: true, includeResultMetadata: true } }
+                { $set: { title: newTitle.title } },
+                { upsert: true, new: true, includeResultMetadata: true }
             );
 
         connection.close();
@@ -81,7 +90,12 @@ class ToDosControllers {
             throw new Error('false');
         }
 
-        await db.collection('ToDos').deleteOne({ _id: new ObjectId(id) },{ upsert: true, new: true, includeResultMetadata: true });
+        await db
+            .collection('ToDos')
+            .deleteOne(
+                { _id: new ObjectId(id) },
+                { upsert: true, new: true, includeResultMetadata: true }
+            );
 
         connection.close();
         return true;
@@ -110,7 +124,8 @@ class ToDosControllers {
             .collection('ToDos')
             .updateOne(
                 { _id: new ObjectId(id) },
-                { $set: { isCompleted: !foundToDo[0].isCompleted }, { upsert: true, new: true, includeResultMetadata: true } }
+                { $set: { isCompleted: !foundToDo[0].isCompleted } },
+                { upsert: true, new: true, includeResultMetadata: true }
             );
 
         connection.close();
