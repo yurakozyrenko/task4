@@ -26,7 +26,7 @@ class ToDosControllers {
         toDo.idUser = user.id;
         toDos.push(toDo);
 
-        await db.collection('ToDos').insertOne(toDo, {upsert: true, new: true});
+        await db.collection('ToDos').insertOne(toDo, { upsert: true, new: true, includeResultMetadata: true });
 
         connection.close();
         return toDo;
@@ -55,7 +55,7 @@ class ToDosControllers {
             .collection('ToDos')
             .updateOne(
                 { _id: new ObjectId(id) },
-                { $set: { title: newTitle.title }, {upsert: true, new: true} }
+                { $set: { title: newTitle.title }, { upsert: true, new: true, includeResultMetadata: true } }
             );
 
         connection.close();
@@ -81,7 +81,7 @@ class ToDosControllers {
             throw new Error('false');
         }
 
-        await db.collection('ToDos').deleteOne({ _id: new ObjectId(id) },{upsert: true, new: true});
+        await db.collection('ToDos').deleteOne({ _id: new ObjectId(id) },{ upsert: true, new: true, includeResultMetadata: true });
 
         connection.close();
         return true;
@@ -110,7 +110,7 @@ class ToDosControllers {
             .collection('ToDos')
             .updateOne(
                 { _id: new ObjectId(id) },
-                { $set: { isCompleted: !foundToDo[0].isCompleted }, {upsert: true, new: true} }
+                { $set: { isCompleted: !foundToDo[0].isCompleted }, { upsert: true, new: true, includeResultMetadata: true } }
             );
 
         connection.close();
