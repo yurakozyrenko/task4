@@ -1,9 +1,10 @@
 const express = require('express');
 const app = express();
-const Sentry = require("@sentry/node");
-require('dotenv').config();
-const bodyParser = require('body-parser');
 
+const Sentry = require('@sentry/node');
+require('dotenv').config();
+
+app.use(express.json());
 app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.errorHandler());
 
@@ -22,9 +23,6 @@ Sentry.init({
     // Performance Monitoring
     tracesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!,
 });
-
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
 
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');

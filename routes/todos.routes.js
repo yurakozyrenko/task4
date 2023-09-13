@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const ToDosControllers = require('../controllers/todos.controller');
-const ToDosService = require('../services/todos.service');
 const verifyJWT = require('../middleware/verifyJWT');
 const { param, body, validationResult } = require('express-validator');
 
@@ -222,7 +221,7 @@ router.patch(
     '/:id',
     verifyJWT,
     param('id')
-        .isLength({ min: 36, max: 36 })
+        .isLength({ min: 24, max: 24 })
         .withMessage(
             'Укажите корректный id (XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX)'
         ),
@@ -301,7 +300,7 @@ router.delete(
     '/:id',
     verifyJWT,
     param('id')
-        .isLength({ min: 36, max: 36 })
+        .isLength({ min: 24, max: 24 })
         .withMessage(
             'Укажите корректный id (XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX)'
         ),
@@ -376,7 +375,7 @@ router.patch(
     '/:id/isCompleted',
     verifyJWT,
     param('id')
-        .isLength({ min: 36, max: 36 })
+        .isLength({ min: 24, max: 24 })
         .withMessage(
             'Укажите корректный id (XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX)'
         ),
