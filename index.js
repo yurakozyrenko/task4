@@ -1,7 +1,9 @@
 const express = require('express');
 const app = express();
+const { connectToDb, getDb } = require('./db');
 
 const Sentry = require('@sentry/node');
+
 require('dotenv').config();
 
 app.use(express.json());
@@ -44,7 +46,15 @@ const swaggerOptions = {
 app.use('/api', require('./routes/index'));
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
-
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-
-app.listen(process.env.PORT, () => 'Server start');
+let db;
+connectToDb((err) => {
+    if (!err) {
+        app.listen(process.env.PORT, (err) => {
+            err ? console.log(err) : console.log(`Server start`);
+        });
+        db = getDb();
+    } else {
+        console.log(`DB connection error ${err}`);
+    }
+});
