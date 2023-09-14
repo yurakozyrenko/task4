@@ -9,10 +9,16 @@ class UserControllers {
         const { email, password } = data;
         const connection = await mongoClient.connect();
         const db = await connection.db('ToDo');
-        const users = await db.collection('Users').aggregate().toArray();
-        if (users.find((item) => item.email === email)) {
+
+        const users = await db
+            .collection('Users')
+            .find({ email: email })
+            .toArray();
+
+        if (users.length !== 0) {
             throw new Error('Логин уже используется');
         }
+
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         const user = {
             email,
@@ -27,11 +33,15 @@ class UserControllers {
         const { email, password } = data;
         const connection = await mongoClient.connect();
         const db = await connection.db('ToDo');
-        const users = await db.collection('Users').aggregate().toArray();
-        let findUser = users.find((item) => item.email === email);
-        if (!findUser) {
+
+        const findUser = await db
+            .collection('Users')
+            .findOne({ email: email }, { returnDocument: 'after' });
+
+            if (!findUser) {
             throw new Error('Пользователь не зарегистрирован');
         }
+
         const compareUser = await bcrypt.compare(password, findUser.password);
         if (!compareUser) {
             throw new Error('invalid password');
