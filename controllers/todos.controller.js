@@ -5,16 +5,18 @@ class ToDosControllers {
     async getToDos(user) {
         const connection = await mongoClient.connect();
         const db = await connection.db('ToDo');
-        const toDos = await db.collection('ToDos').aggregate().toArray();
-        const toDo = toDos.filter((item) => item.idUser === user.id);
+        const toDos = await db
+            .collection('ToDos')
+            .find({ idUser: user.id })
+            .toArray();
         connection.close();
-        return toDo;
+        return toDos;
     }
 
     async createToDo(toDo, user) {
         const connection = await mongoClient.connect();
         const db = await connection.db('ToDo');
-        
+
         toDo.isCompleted = false;
         toDo.idUser = user.id;
         await db.collection('ToDos').insertOne(toDo);
@@ -26,54 +28,32 @@ class ToDosControllers {
     async patchToDo(newTitle, id, user) {
         const connection = await mongoClient.connect();
         const db = await connection.db('ToDo');
-        const toDos = await db.collection('ToDos').aggregate().toArray();
 
-        const toDo = toDos.filter((item) => item.idUser === user.id);
-        if (toDo.length === 0) {
-            throw new Error('no task for user');
-        }
-
-        const foundToDo = toDo.filter(
-            (item) =>
-                JSON.stringify(item._id) === JSON.stringify(new ObjectId(id))
-        );
-
-        if (foundToDo.length === 0) {
-            throw new Error('no find title task');
-        }
-
-        await db
+        const updateToDo = await db
             .collection('ToDos')
-            .updateOne(
-                { _id: new ObjectId(id) },
-                { $set: { title: newTitle.title } }
+            .findOneAndUpdate(
+                { _id: new ObjectId(id), idUser: user.id },
+                { $set: { title: newTitle.title } },
+                { returnDocument: 'after' }
             );
 
         connection.close();
-        return foundToDo;
+        return updateToDo;
     }
 
     async deleteToDo(id, user) {
         const connection = await mongoClient.connect();
         const db = await connection.db('ToDo');
-        const toDos = await db.collection('ToDos').aggregate().toArray();
 
-        const toDo = toDos.filter((item) => item.idUser === user.id);
-        if (toDo.length === 0) {
-            throw new Error('no task for user');
+        const result = await db
+            .collection('ToDos')
+            .findOneAndDelete(
+                { _id: new ObjectId(id), idUser: user.id },
+                { returnNewDocument: true }
+            );
+        if (!result) {
+            return 'false';
         }
-
-        const foundToDo = toDo.filter(
-            (item) =>
-                JSON.stringify(item._id) === JSON.stringify(new ObjectId(id))
-        );
-
-        if (foundToDo.length === 0) {
-            throw new Error('false');
-        }
-
-        await db.collection('ToDos').deleteOne({ _id: new ObjectId(id) });
-
         connection.close();
         return true;
     }
@@ -81,31 +61,13 @@ class ToDosControllers {
     async patchToDoStatus(id, user) {
         const connection = await mongoClient.connect();
         const db = await connection.db('ToDo');
-        const toDos = await db.collection('ToDos').aggregate().toArray();
-
-        const toDo = toDos.filter((item) => item.idUser === user.id);
-        if (toDo.length === 0) {
-            throw new Error('no task for user');
-        }
-
-        const foundToDo = toDo.filter(
-            (item) =>
-                JSON.stringify(item._id) === JSON.stringify(new ObjectId(id))
+        const updateToDo = await db.collection('ToDos').findOneAndUpdate(
+            { _id: new ObjectId(id), idUser: user.id },
+            { $set: { isCompleted: false } }, //сдесь вопрос
+            { returnDocument: 'after' }
         );
-
-        if (foundToDo.length === 0) {
-            throw new Error('no find title task');
-        }
-
-        await db
-            .collection('ToDos')
-            .updateOne(
-                { _id: new ObjectId(id) },
-                { $set: { isCompleted: !foundToDo[0].isCompleted } }
-            );
-
         connection.close();
-        return foundToDo;
+        return updateToDo;
     }
 }
 
