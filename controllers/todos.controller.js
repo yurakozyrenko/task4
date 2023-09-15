@@ -37,6 +37,10 @@ class ToDosControllers {
                 { returnDocument: 'after' }
             );
 
+        if (!updateToDo) {
+            throw new Error('У пользователя нет task c указанным id');
+        }
+
         connection.close();
         return updateToDo;
     }
@@ -61,13 +65,25 @@ class ToDosControllers {
     async patchToDoStatus(id, user) {
         const connection = await mongoClient.connect();
         const db = await connection.db('ToDo');
-        const updateToDo = await db.collection('ToDos').findOneAndUpdate(
-            { _id: new ObjectId(id), idUser: user.id },
-            { $set: { isCompleted: false } }, //сдесь вопрос
-            { returnDocument: 'after' }
-        );
-        connection.close();
-        return updateToDo;
+
+        const findToDo = await db
+            .collection('ToDos')
+            .findOne({ _id: new ObjectId(id), idUser: user.id });
+
+        if (findToDo) {
+            const newValue = !findToDo.isCompleted;
+            const updateToDo = await db
+                .collection('ToDos')
+                .findOneAndUpdate(
+                    { _id: new ObjectId(id), idUser: user.id },
+                    { $set: { isCompleted: newValue } },
+                    { returnDocument: 'after' }
+                );
+            connection.close();
+            return updateToDo;
+        } else {
+            throw new Error('У пользователя нет task c указанным id');
+        }
     }
 }
 

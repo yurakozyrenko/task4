@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const UsersControllers = require('../controllers/users.controller');
-const { body, validationResult } = require('express-validator');
+const { checkSchema, validationResult } = require('express-validator');
+
+const {registrationSchema} = require('../helpers')
 
 /**
  * @swagger
@@ -39,10 +41,7 @@ const { body, validationResult } = require('express-validator');
  *              description: Some server err
  */
 
-router.post('/login',
-body('email').isEmail().withMessage('Укажите корректный email (example@example.com)'),
-body('password').isLength({ min: 6 }).withMessage('Пароль должен быть длиной не менее 6 символов'),
-async (req, res) => {
+router.post('/login', checkSchema(registrationSchema), async (req, res) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -79,22 +78,17 @@ async (req, res) => {
  *              description: Some server err
  */
 
-router.post(
-    '/register',
-    body('email').isEmail().withMessage('Укажите корректный email (example@example.com)'),
-    body('password').isLength({ min: 6 }).withMessage('Пароль должен быть длиной не менее 6 символов'),
-    async (req, res) => {
-        try {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
-            }
-            await UsersControllers.createUser(req.body);
-            res.send('Пользователь зарегистрирован');
-        } catch (error) {
-            return res.status(500).send(error.message);
+router.post('/register', checkSchema(registrationSchema), async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
         }
+        await UsersControllers.createUser(req.body);
+        res.send('Пользователь зарегистрирован');
+    } catch (error) {
+        return res.status(500).send(error.message);
     }
-);
+});
 
 module.exports = router;

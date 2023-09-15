@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const ToDosControllers = require('../controllers/todos.controller');
 const verifyJWT = require('../middleware/verifyJWT');
-const { param, body, validationResult } = require('express-validator');
+const { checkSchema, validationResult } = require('express-validator');
+
+const { idSchema, titleSchema } = require('../helpers');
 
 /**
  * @swagger
@@ -121,23 +123,18 @@ router.get('/', verifyJWT, async (req, res) => {
  *              description: Some server err
  */
 
-router.post(
-    '/',
-    verifyJWT,
-    body('title').notEmpty().withMessage('Title должно быть строкой'),
-    async (req, res) => {
-        try {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
-            }
-            const toDo = await ToDosControllers.createToDo(req.body, req.user);
-            res.send(toDo);
-        } catch (error) {
-            return res.status(500).send(error.message);
+router.post('/', verifyJWT, checkSchema(titleSchema), async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
         }
+        const toDo = await ToDosControllers.createToDo(req.body, req.user);
+        res.send(toDo);
+    } catch (error) {
+        return res.status(500).send(error.message);
     }
-);
+});
 
 /**
  * @swagger
@@ -220,14 +217,8 @@ router.post(
 router.patch(
     '/:id',
     verifyJWT,
-    param('id')
-        .isLength({ min: 24, max: 24 })
-        .withMessage(
-            'Укажите корректный id (XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX)'
-        ),
-    body('title')
-        .exists({ checkFalsy: true })
-        .withMessage('Title должно быть строкой'),
+    checkSchema(idSchema),
+    checkSchema(titleSchema),
     async (req, res) => {
         try {
             const errors = validationResult(req);
@@ -241,7 +232,7 @@ router.patch(
             );
             res.send(toDo);
         } catch (error) {
-            return res.status(500).send(error.message);
+            return res.status(400).send(error.message);
         }
     }
 );
@@ -296,30 +287,18 @@ router.patch(
  *              description: Some server err
  */
 
-router.delete(
-    '/:id',
-    verifyJWT,
-    param('id')
-        .isLength({ min: 24, max: 24 })
-        .withMessage(
-            'Укажите корректный id (XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX)'
-        ),
-    async (req, res) => {
-        try {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
-            }
-            const toDo = await ToDosControllers.deleteToDo(
-                req.params.id,
-                req.user
-            );
-            res.send(toDo);
-        } catch (error) {
-            return res.status(500).send(error.message);
+router.delete('/:id', verifyJWT, checkSchema(idSchema), async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
         }
+        const toDo = await ToDosControllers.deleteToDo(req.params.id, req.user);
+        res.send(toDo);
+    } catch (error) {
+        return res.status(500).send(error.message);
     }
-);
+});
 
 /**
  * @swagger
@@ -374,11 +353,7 @@ router.delete(
 router.patch(
     '/:id/isCompleted',
     verifyJWT,
-    param('id')
-        .isLength({ min: 24, max: 24 })
-        .withMessage(
-            'Укажите корректный id (XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX)'
-        ),
+    checkSchema(idSchema),
     async (req, res) => {
         try {
             const errors = validationResult(req);
@@ -391,7 +366,7 @@ router.patch(
             );
             res.send(toDo);
         } catch (error) {
-            return res.status(500).send(error.message);
+            return res.status(400).send(error.message);
         }
     }
 );
